@@ -4,7 +4,8 @@ import {
   TouchableOpacity,
   Text, Dimensions, 
   ImageBackground, 
-  Image, 
+  Image,
+  TextInput, 
   Alert  } from "react-native";
 import React, {useEffect, useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
@@ -20,20 +21,58 @@ const Home = () => {
 
   const points = useSelector(state => state.points);
   const dispatch = useDispatch();
-  const [score, setScore] = useState(0);
+  const [hours, setHours] = useState(0);
+  const [minutes, setMinutes] = useState(0);
+  const [seconds, setSeconds] = useState(0);
+  const [success, setSuccess] = useState(false);
+  const [play, setPlay] = useState(false);
 
 
   useEffect(() => {
-    console.log(points);
-  },[]);
+    const timeOut = setTimeout(() => {
+      if(play && seconds > 0){
+        setSeconds(seconds - 1);
+        console.log(seconds);
+      }
+      if(play && minutes > 0 && seconds === 0){
+        setMinutes(minutes - 1);
+        setSeconds(60);
+        console.log("minutes",minutes);
+      }
+      if(play && hours > 0 && minutes === 0 && seconds === 0){
+        setMinutes(60);
+        setHours(hours - 1);
+        console.log("minutes",minutes);
+        console.log("second",seconds);
+      }
+      if(play && minutes === 0 && seconds === 0 && hours === 0) {
+        console.log("ok");
+        setSuccess(true);
+      }
+    }, 1000);
+    return () => {
+      clearTimeout(timeOut);
+    }
+  },[minutes, seconds, hours]);
 
   const onClickStartButton = () => {
     if (points.value === 0) {
       Alert.alert('Please buy more turn');
       return false;
     }
+    if(minutes === 0 && hours === 0){
+      Alert.alert('Please input text');
+      return false;
+    }
     dispatch(decrement());
-    navigation.navigate("Play");
+    setPlay(true);
+    setMinutes(Number(minutes));
+    setHours(Number(hours));
+  }
+
+  const onClickSuccessImage = () => {
+    setPlay(false);
+    setSuccess(false);
   }
 
 
@@ -45,34 +84,38 @@ const Home = () => {
   return (
     <ImageBackground style={appStyle.homeView} source={images.background}>
       <View style={appStyle.appBar}>
-        <ImageBackground source={images.score} style={appStyle.scoreStyle}>
-          <Text style={appStyle.turnText}>{`Score: ${score}`}</Text>
-        </ImageBackground>
+          <Text style={appStyle.turnText}>{`Turn: ${points.value}`}</Text>
         <TouchableOpacity onPress={onClickTurnButton}>
-          <ImageBackground source={images.heart} style={appStyle.scoreStyle}>
-          <Text style={appStyle.turnText}>{points.value}</Text>
-          </ImageBackground>
+          <Image source={images.iconbuy} style={appStyle.scoreStyle} />
         </TouchableOpacity>
       </View>
-      <Image source={images.learnChinese} style={appStyle.textImage} />
-      <ImageBackground source={images.keyworks} style={appStyle.keyworksImage}>
-        <Image source={images.label} style={appStyle.buyImage} />
-      </ImageBackground>
-      <View style={appStyle.centerView}>
-        <ImageBackground source={images.square1} style={appStyle.centerImage}>
-          <ImageBackground source={images.motor} style={appStyle.itemImage}>
-            <Image source={images.true} style={appStyle.backStyle} />
-          </ImageBackground>
-        </ImageBackground>
-        <ImageBackground source={images.square2} style={appStyle.centerImage}>
-          <ImageBackground source={images.car} style={appStyle.itemImage}>
-            <Image source={images.false} style={appStyle.backStyle} />
-          </ImageBackground>
-        </ImageBackground>
+      <View style={appStyle.centerImage}>
+          <View style={appStyle.inputView}>
+            {play ? <Text style={appStyle.clockText}>{`${hours} : ${minutes}`}</Text> : 
+            <>
+            <TextInput
+              style={appStyle.input}
+              onChangeText={setHours}
+              value={hours.toString()}
+              keyboardType="numeric"
+            />
+            <Text style={appStyle.turnText}>:</Text>
+            <TextInput
+              style={appStyle.input}
+              onChangeText={setMinutes}
+              value={minutes.toString()}
+              keyboardType="numeric"
+            />
+            </> }
+          </View>
+          <TouchableOpacity onPress={onClickStartButton}>
+            <Image source={images.start} style={appStyle.buttonStyle} />
+          </TouchableOpacity>
       </View>
-      <TouchableOpacity onPress={onClickStartButton}>
-        <Image source={images.play} style={appStyle.buttonStyle} />
-      </TouchableOpacity>
+      {success && 
+        <TouchableOpacity onPress={onClickSuccessImage} style={appStyle.successButton}>
+          <Image source={images.success} style={appStyle.successImage} />
+        </TouchableOpacity> }
     </ImageBackground>
   );
 };
@@ -87,21 +130,49 @@ export const appStyle = StyleSheet.create({
     justifyContent: 'flex-start',
     resizeMode: 'cover',
   },
+  successButton: {
+    position: 'absolute',
+    top: '10%',
+  },
   appBar: {
-    paddingTop: 20,
-    flex: 0.1,
+    paddingTop: 10,
+    flex: 0.2,
     width: '100%',
     paddingHorizontal: 10,
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
+  successImage: {
+    width: windowWidth * 0.8,
+    height: windowHeight * 0.4,
+    resizeMode: 'contain',
+  },
   centerImage: {
-    width: windowWidth * 0.4,
-    height: windowWidth * 0.4,
-    resizeMode: 'cover',
+    marginTop: 20,
+    width: windowWidth * 0.9,
+    height: windowHeight * 0.4,
+    borderColor: '#0a98c9',
+    borderRadius: 8,
+    borderWidth: 8,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  clockText: {
+    fontSize: windowWidth > 640 ? 80 : 50,
+    color: '#0a98c9',
+    fontWeight: 'bold',
+  },
+  input: {
+    height: windowWidth > 640 ? 100 : 60,
+    width: windowWidth > 640 ? 100 : 60,
+    margin: 12,
+    fontSize: windowWidth > 640 ? 40 : 30,
+    borderColor: '#0a98c9',
+    borderRadius: 4,
+    borderWidth: 2,
+    textAlign: 'center',
+    padding: 10,
   },
   itemImage: {
     width: windowWidth * 0.25,
@@ -111,15 +182,22 @@ export const appStyle = StyleSheet.create({
     justifyContent: 'center',
   },
   scoreStyle: {
-    width: windowWidth * 0.32,
+    width: windowWidth * 0.1,
     height: windowWidth * 0.1,
     resizeMode: 'contain',
     alignItems: 'center',
   },
   turnText: {
     fontSize: windowWidth > 640 ? 30 : 20,
-    color: 'white',
-    fontFamily: 'NotoSansCJKsc-Black',
+    color: '#0a98c9',
+    fontWeight: 'bold',
+  },
+  inputView: {
+    width: windowWidth * 0.8,
+    height: windowWidth * 0.2,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   textImage: {
     width: windowWidth * 0.8,
@@ -127,10 +205,9 @@ export const appStyle = StyleSheet.create({
     resizeMode: 'contain',
   },
   centerView: {
-    marginTop: 20,
-    flex: 0.4,
+    flex: 0.8,
+    backgroundColor: 'red',
     width: '100%',
-    paddingHorizontal: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
@@ -163,7 +240,6 @@ export const appStyle = StyleSheet.create({
     width: windowWidth * 0.3,
     height: windowWidth * 0.3,
     resizeMode: 'contain',
-    marginTop: windowHeight * 0.2,
   }
 });
 

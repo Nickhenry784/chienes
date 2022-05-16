@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   ScrollView,
+  ImageBackground,
   Dimensions,
 } from 'react-native';
 
@@ -15,6 +16,7 @@ import RNIap, {
   finishTransaction,
 } from 'react-native-iap';
 import {useDispatch} from 'react-redux';
+import { images } from '../assets';
 import {items} from '../conf';
 import {increamentByAmount} from '../redux/pointSlice';
 
@@ -98,8 +100,8 @@ export default function Buy() {
   };
 
   return (
+    <ImageBackground style={styles.homeView} source={images.background}>
       <ScrollView
-        style={styles.bg}
         contentContainerStyle={{ paddingTop: 10}}>
         {isLoading ? (
           <ActivityIndicator size="small" />
@@ -120,6 +122,7 @@ export default function Buy() {
           </>
         )}
       </ScrollView>
+    </ImageBackground>
   );
 }
 
@@ -175,14 +178,12 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   price: {
-    fontFamily: 'NotoSansCJKsc-Black',
     fontSize: windowWidth > 640 ? 30 : 20,
     color: 'black',
   },
   descr: {
     fontSize: windowWidth > 640 ? 20 : 18,
     color: 'black',
-    fontFamily: 'NotoSansCJKsc-Black',
   },
   itemList: {},
   item2: {
@@ -191,6 +192,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 3,
     elevation: 2,
+    borderColor: 'black',
     marginBottom: 10,
     flexDirection: 'row',
     alignItems: 'center',
@@ -207,14 +209,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   item3: {
-    width: '50%',
+    width: '100%',
     padding: 5,
   },
   item3Content: {
     backgroundColor: '#fff',
     paddingHorizontal: 10,
+    width: windowWidth * 0.7,
     paddingVertical: 10,
-    borderRadius: 3,
+    borderRadius: 10,
+    borderColor: 'black',
+    borderWidth: 2,
     elevation: 2,
     marginBottom: 10,
     alignItems: 'center',
