@@ -130,8 +130,17 @@ android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
+    flavorDimensions "appstore"
+
+    productFlavors{
+        amazon{
+            dimension "appstore"
+            missingDimensionStrategy "store", "amazon"
+        }
+    }
+
     defaultConfig {
-        applicationId "com.kiaraleffler.learnchinesemodern"
+        applicationId "com.amazon.learnchinesemodern"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

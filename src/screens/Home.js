@@ -6,11 +6,12 @@ import {
   ImageBackground, 
   Image, 
   Alert  } from "react-native";
-import React, {useEffect, useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {decrement} from '../redux/pointSlice';
 import {useDispatch, useSelector} from 'react-redux';
 import { images } from "../assets";
+import { useEffect } from "react";
 
 const windowWidth = Dimensions.get('screen').width;
 const windowHeight = Dimensions.get('screen').height;
@@ -21,10 +22,24 @@ const Home = () => {
   const points = useSelector(state => state.points);
   const dispatch = useDispatch();
   const [score, setScore] = useState(0);
+  const cal = useRef(['+','-','*','/']).current;
+  const [randomNum1, setRandomNum1] = useState(Math.floor(Math.random() * 50));
+  const [randomNum2, setRandomNum2] = useState(Math.floor(1 + Math.random() * 100));
+  const [randomCal, setRandomCal] = useState(Math.floor(Math.random() * 3));
+  const [result, setResult] = useState(0);
 
 
   useEffect(() => {
-    console.log(points);
+    switch(cal[randomCal]){
+      case '+':
+        return setResult(randomNum1 + randomNum2);
+      case '-':
+        return setResult(randomNum1 - randomNum2);
+      case '*':
+        return setResult(randomNum1 * randomNum2);
+      default:
+        return setResult(randomNum1 / randomNum2);
+    }
   },[]);
 
   const onClickStartButton = () => {
@@ -43,37 +58,31 @@ const Home = () => {
 
 
   return (
-    <ImageBackground style={appStyle.homeView} source={images.background}>
+    <View style={appStyle.homeView}>
       <View style={appStyle.appBar}>
         <ImageBackground source={images.score} style={appStyle.scoreStyle}>
-          <Text style={appStyle.turnText}>{`Score: ${score}`}</Text>
+          <Text style={appStyle.turnText}>{score}</Text>
         </ImageBackground>
         <TouchableOpacity onPress={onClickTurnButton}>
-          <ImageBackground source={images.heart} style={appStyle.scoreStyle}>
-          <Text style={appStyle.turnText}>{points.value}</Text>
+          <ImageBackground source={images.turn} style={appStyle.scoreStyle}>
+            <Text style={appStyle.turnText}>{points.value}</Text>
           </ImageBackground>
         </TouchableOpacity>
       </View>
-      <Image source={images.learnChinese} style={appStyle.textImage} />
-      <ImageBackground source={images.keyworks} style={appStyle.keyworksImage}>
-        <Image source={images.label} style={appStyle.buyImage} />
+      <Image source={images.top} style={appStyle.textImage} />
+      <TouchableOpacity onPress={onClickStartButton}>
+        <Image source={images.play1} style={appStyle.backStyle} />
+      </TouchableOpacity>
+      <ImageBackground source={images.panel} style={appStyle.centerImage}>
+        <Text style={appStyle.labelText}>{`${randomNum1} ${cal[randomCal]} ${randomNum2}`}</Text>
+        <Text style={appStyle.labelText}>=</Text>
+        <Text style={appStyle.labelText}>{result}</Text>
       </ImageBackground>
       <View style={appStyle.centerView}>
-        <ImageBackground source={images.square1} style={appStyle.centerImage}>
-          <ImageBackground source={images.motor} style={appStyle.itemImage}>
-            <Image source={images.true} style={appStyle.backStyle} />
-          </ImageBackground>
-        </ImageBackground>
-        <ImageBackground source={images.square2} style={appStyle.centerImage}>
-          <ImageBackground source={images.car} style={appStyle.itemImage}>
-            <Image source={images.false} style={appStyle.backStyle} />
-          </ImageBackground>
-        </ImageBackground>
+        <Image source={images.true} style={appStyle.itemImage}/>
+        <Image source={images.false} style={appStyle.itemImage}/>
       </View>
-      <TouchableOpacity onPress={onClickStartButton}>
-        <Image source={images.play} style={appStyle.buttonStyle} />
-      </TouchableOpacity>
-    </ImageBackground>
+    </View>
   );
 };
 
@@ -86,6 +95,7 @@ export const appStyle = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
     resizeMode: 'cover',
+    backgroundColor: '#2d1416',
   },
   appBar: {
     paddingTop: 20,
@@ -97,39 +107,46 @@ export const appStyle = StyleSheet.create({
     justifyContent: 'space-between',
   },
   centerImage: {
-    width: windowWidth * 0.4,
-    height: windowWidth * 0.4,
-    resizeMode: 'cover',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  itemImage: {
-    width: windowWidth * 0.25,
-    height: windowHeight * 0.08,
+    width: windowWidth * 0.8,
+    height: windowWidth * 0.7,
     resizeMode: 'contain',
     alignItems: 'center',
     justifyContent: 'center',
+    paddingTop: 20,
+  },
+  itemImage: {
+    width: windowWidth * 0.3,
+    height: windowHeight * 0.1,
+    resizeMode: 'contain',
   },
   scoreStyle: {
-    width: windowWidth * 0.32,
+    width: windowWidth * 0.3,
     height: windowWidth * 0.1,
     resizeMode: 'contain',
     alignItems: 'center',
+    flexDirection: 'row',
+    paddingRight: 20,
+    justifyContent: 'flex-end'
   },
   turnText: {
-    fontSize: windowWidth > 640 ? 30 : 20,
+    fontSize: 30,
     color: 'white',
-    fontFamily: 'NotoSansCJKsc-Black',
+    fontFamily: 'Via Appia',
+  },
+  labelText: {
+    fontSize: 50,
+    color: 'black',
+    fontFamily: 'Via Appia',
   },
   textImage: {
-    width: windowWidth * 0.8,
-    height: windowWidth * 0.2,
+    width: windowWidth * 0.4,
+    height: windowWidth * 0.4,
     resizeMode: 'contain',
   },
   centerView: {
-    marginTop: 20,
+    marginTop: 10,
     flex: 0.4,
-    width: '100%',
+    width: '80%',
     paddingHorizontal: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',

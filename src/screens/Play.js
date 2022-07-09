@@ -6,67 +6,122 @@ import {
   ImageBackground, 
   Image, 
   Alert  } from "react-native";
-import React, {useEffect, useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {decrement} from '../redux/pointSlice';
 import {useDispatch, useSelector} from 'react-redux';
 import { images } from "../assets";
+import { useEffect } from "react";
 
 const windowWidth = Dimensions.get('screen').width;
 const windowHeight = Dimensions.get('screen').height;
-
-const data = [{id: 1, text: "玉米", image: [images.corn, images.flower], result: images.com},{id: 2, text: "摩托车", image: [images.motor, images.car], result: images.motor},{id: 3, text: "紫色", image: [images.purple, images.green] , result: images.purple},{id: 4, text: "花 ", image: [images.flower, images.car] , result: images.flower},{id: 5, text: "火", image: [images.fire, images.snow] , result: images.fire} ]
 
 const Home = () => {
   const navigation = useNavigation();
 
   const [score, setScore] = useState(0);
-  const [random, setRandom] = useState(Math.floor(Math.random() * 1));
-  const [item, setItem] = useState(data[Math.floor(Math.random() * 5)]);
+  const cal = useRef(['+','-','*','/']).current;
+  const [randomNum1, setRandomNum1] = useState(Math.floor(Math.random() * 50));
+  const [randomNum2, setRandomNum2] = useState(Math.floor(1 + Math.random() * 100));
+  const [randomCal, setRandomCal] = useState(Math.floor(Math.random() * 4));
+  const [result, setResult] = useState(0);
+  const [time, setTime] = useState(5);
+  const [resultClick, setResultClick] = useState(0);
+  const [popupState, setPopupState] = useState(false);
 
 
   useEffect(() => {
-    console.log(item);
-  },[]);
+    switch(cal[randomCal]){
+      case '+':
+        return Math.floor(Math.random() * 3) === 0 ? setResult(randomNum1 + randomNum2) : setResult(randomNum1 + randomNum2 + Math.floor(-10 + Math.random() * 30));
+      case '-':
+        return Math.floor(Math.random() * 3) === 0 ? setResult(randomNum1 - randomNum2) : setResult(randomNum1 - randomNum2 + Math.floor(-10 + Math.random() * 30));
+      case '*':
+        return Math.floor(Math.random() * 3) === 0 ? setResult(randomNum1 * randomNum2) : setResult(randomNum1 * randomNum2 + Math.floor(-10 + Math.random() * 30));
+      default:
+        return Math.floor(Math.random() * 3) === 0 ? setResult(randomNum1 / randomNum2) : setResult(randomNum1 / randomNum2 + Math.floor(-10 + Math.random() * 30));
+    }
+  },[randomCal]);
 
 
-  const onClickItemButton = (image) => {
-    if(image === item.result){
-      setScore(score + 100);
-      setRandom(Math.floor(Math.random() * 1));
-      console.log(random);
-      setItem(data[Math.floor(Math.random() * 5)]);
-      console.log(item);
+  useEffect(() => {
+    const timeOut = setTimeout(() => {
+      if(!popupState && time > 0){
+        setTime(time - 1);
+      }
+      if(!popupState && time === 0){
+        if(resultClick === 0 || resultClick === false){
+          setPopupState(true);
+          setTimeout(() => {
+            navigation.goBack();
+          },5000);
+        }else{
+          setScore(score + 10);
+          setRandomNum1(Math.floor(Math.random() * 50));
+          setRandomNum2(Math.floor(Math.random() * 50));
+          setRandomCal(Math.floor(Math.random() * 4));
+          setResultClick(0);
+          setTime(5);
+        }
+        clearTimeout(timeOut);
+      }
+    }, 1000);
+    return () => {
+      clearTimeout(timeOut);
+    }
+  }, [time]);
+
+  const onClickBtn = (bool) => {
+    var resultTemp = 0;
+    if(cal[randomCal] === '+'){
+      resultTemp = randomNum1 + randomNum2;
+    } else if(cal[randomCal] === '-'){
+      resultTemp = randomNum1 - randomNum2;
+    } else if(cal[randomCal] === '*'){
+      resultTemp = randomNum1 * randomNum2;
     } else{
-      navigation.goBack();
+      resultTemp = randomNum1 / randomNum2;
+    }
+    if(bool === true && result === resultTemp ){
+      setResultClick(true);
+    }else if(bool === true && result !== resultTemp ){
+      setResultClick(false);
+    }else if(bool === false && result !== resultTemp ){
+      setResultClick(true);
+    }else{
+      setResultClick(false);
     }
   }
 
 
   return (
-    <ImageBackground style={appStyle.homeView} source={images.background}>
+    <View style={appStyle.homeView}>
       <View style={appStyle.appBar}>
         <ImageBackground source={images.score} style={appStyle.scoreStyle}>
-          <Text style={appStyle.turnText}>{`Score: ${score}`}</Text>
+          <Text style={appStyle.turnText}>{score}</Text>
         </ImageBackground>
       </View>
-      <Image source={images.learnChinese} style={appStyle.textImage} />
-        <ImageBackground source={images.keyworks} style={appStyle.keyworksImage}>
-          <Text style={appStyle.text}>{item.text}</Text>
-        </ImageBackground>
+      <Image source={images.top} style={appStyle.textImage} />
+      <Text style={appStyle.timeText}>{time}</Text>
+      <ImageBackground source={images.panel} style={appStyle.centerImage}>
+        <Text style={appStyle.labelText}>{`${randomNum1} ${cal[randomCal] === '*' ? 'x' : cal[randomCal]} ${randomNum2}`}</Text>
+        <Text style={appStyle.labelText}>=</Text>
+        <Text style={appStyle.labelText}>{result}</Text>
+      </ImageBackground>
       <View style={appStyle.centerView}>
-        <TouchableOpacity onPress={() => onClickItemButton(item.image[random + 1 || random - 1])}>
-          <ImageBackground source={images.square1} style={appStyle.centerImage}>
-            <Image source={item.image[random + 1 || random - 1]} style={appStyle.itemImage} />
-          </ImageBackground>
+        <TouchableOpacity onPress={() => onClickBtn(true)}>
+          <Image source={images.true} style={appStyle.itemImage}/>
         </TouchableOpacity>
-        <TouchableOpacity onPress={()  => onClickItemButton(item.image[random])}>
-          <ImageBackground source={images.square2} style={appStyle.centerImage}>
-            <Image source={item.image[random]} style={appStyle.itemImage}/>
-          </ImageBackground>
+        <TouchableOpacity onPress={() => onClickBtn(false)}>
+          <Image source={images.false} style={appStyle.itemImage}/>
         </TouchableOpacity>
       </View>
-    </ImageBackground>
+      {popupState && <View style={appStyle.popupView}>
+        <ImageBackground source={images.popup} style={appStyle.popupImage}>
+          <Text style={appStyle.scoreText}>{score}</Text>
+        </ImageBackground>
+        </View>}
+    </View>
   );
 };
 
@@ -79,6 +134,7 @@ export const appStyle = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
     resizeMode: 'cover',
+    backgroundColor: '#2d1416',
   },
   appBar: {
     paddingTop: 20,
@@ -90,49 +146,60 @@ export const appStyle = StyleSheet.create({
     justifyContent: 'space-between',
   },
   centerImage: {
-    width: windowWidth * 0.4,
-    height: windowWidth * 0.4,
-    resizeMode: 'cover',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  itemImage: {
-    width: windowWidth * 0.2,
-    height: windowWidth * 0.2,
+    width: windowWidth * 0.8,
+    height: windowWidth * 0.7,
     resizeMode: 'contain',
     alignItems: 'center',
     justifyContent: 'center',
+    paddingTop: 20,
+  },
+  itemImage: {
+    width: windowWidth * 0.3,
+    height: windowHeight * 0.1,
+    resizeMode: 'contain',
   },
   scoreStyle: {
-    width: windowWidth * 0.32,
+    width: windowWidth * 0.3,
     height: windowWidth * 0.1,
     resizeMode: 'contain',
     alignItems: 'center',
+    flexDirection: 'row',
+    paddingRight: 20,
+    justifyContent: 'flex-end'
   },
   turnText: {
-    fontSize: windowWidth > 640 ? 30 : 20,
+    fontSize: 30,
     color: 'white',
-    fontFamily: 'NotoSansCJKsc-Black',
+    fontFamily: 'Via Appia',
+  },
+  labelText: {
+    fontSize: 50,
+    color: 'black',
+    fontFamily: 'Via Appia',
+  },
+  timeText: {
+    fontSize: 70,
+    color: 'white',
+    fontFamily: 'Via Appia',
+  },
+  scoreText: {
+    paddingTop: 30,
+    fontSize: 50,
+    color: 'white',
+    fontFamily: 'Via Appia',
   },
   textImage: {
-    width: windowWidth * 0.8,
-    height: windowWidth * 0.2,
+    width: windowWidth * 0.4,
+    height: windowWidth * 0.4,
     resizeMode: 'contain',
   },
   centerView: {
-    marginTop: 80,
+    marginTop: 10,
     flex: 0.4,
-    width: '100%',
+    width: '80%',
     paddingHorizontal: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
-  },
-  keyworksImage: {
-    width: windowWidth * 0.4,
-    height: windowWidth * 0.1,
-    resizeMode: 'contain',
-    alignItems: 'center',
-    marginVertical: 20,
   },
   buyImage: {
     width: windowWidth * 0.2,
@@ -152,16 +219,24 @@ export const appStyle = StyleSheet.create({
     height: windowWidth * 0.2,
     resizeMode: 'contain',
   },
-  text: {
-    fontSize: windowWidth > 640 ? 30 : 20,
-    color: 'black',
-    fontFamily: 'NotoSansCJKsc-Black',
+  popupView: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+    top: '0%',
+    left: '0%',
+    right: '0%',
+    bottom: '0%',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  buttonStyle: {
-    width: windowWidth * 0.3,
-    height: windowWidth * 0.3,
+  popupImage: {
+    width: windowWidth * 0.7,
+    height: windowHeight * 0.2,
     resizeMode: 'contain',
-    marginTop: windowHeight * 0.2,
+    alignItems: 'center',
+    justifyContent: 'center',
   }
 });
 

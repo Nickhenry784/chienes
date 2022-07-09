@@ -1,4 +1,4 @@
-package com.kiaraleffler.learnchinesemodern;
+package com.amazon.learnchinesemodern;
 
 import com.facebook.react.ReactActivity;
 
